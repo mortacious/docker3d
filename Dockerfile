@@ -1,38 +1,44 @@
-FROM ubuntu:14.04
-MAINTAINER github/ojgarciab
+# ros kinetic base container
+FROM osrf/ros:kinetic-desktop
+MAINTAINER Felix Igelbrink
 
-# Based on http://gernotklingler.com/blog/docker-replaced-virtual-machines-chroots/
-
-# Change repositorios to spanish (optional)
-RUN sed -i 's/\/archive\.ubuntu\.com/\/es.archive.ubuntu.com/g' /etc/apt/sources.list
-# Update packages
-RUN apt-get update
-
+# ===== set environment variables ===== 
 # Use the "noninteractive" debconf frontend
 ENV DEBIAN_FRONTEND noninteractive
-
-# ===== create user/setup environment =====
-# Replace 1000 with your user/group id
-RUN export uid=1000 gid=1000 && \
-    mkdir -p /home/redstar && \
-    echo "redstar:x:${uid}:${gid}:redstar,,,:/home/redstar:/bin/bash" >> /etc/passwd && \
-    echo "redstar:x:${uid}:" >> /etc/group && \
-    echo "redstar ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/redstar && \
-    chmod 0440 /etc/sudoers.d/redstar && \
-    chown ${uid}:${gid} -R /home/redstar
-
-# ===== Install additional packages =====
-RUN apt-get -y install bash-completion git build-essential vim
-
-# ===== install graphics driver&co for accelerated 3d support (optional) =====
-# install nvidia driver
-RUN apt-get install -y binutils mesa-utils
-# Try to test bumblebee (optional)
-RUN apt-get install -y bumblebee nvidia-current bumblebee-nvidia
-    
-# some QT-Apps/Gazebo don't not show controls without this
+ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64:${LD_LIBRARY_PATH}
+ENV QT_GRAPHICSSYSTEM native
 ENV QT_X11_NO_MITSHM 1
+#ENV PATH /usr/local/nvidia/bin:${PATH}
+#LABEL com.nvidia.volumes.needed="nvidia_driver"
 
-ENV HOME /home/redstar
-ENV USER redstar
-USER redstar
+# Ros specify environment settings
+ENV PATH $PATH:/opt/ros/kinetic/bin
+
+# ===== create user environment ===== 
+RUN  export uid=1000 gid=100 && \
+     mkdir -p /home/mortacious && \
+     mkdir -p /etc/sudoers.d && \
+     echo "mortacious:x:${uid}:${gid}:mortacious,,,:/home/mortacious:/bin/bash" >> /etc/passwd && \
+     echo "mortacious:x:${uid}:" >> /etc/group && \
+     echo "mortacious ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/mortacious && \
+     chmod 0440 /etc/sudoers.d/mortacious && \
+     chown ${uid}:${gid} -R /home/mortacious
+
+# ===== install packages ===== 
+RUN apt-get update && apt-get install -y bash-completion git software-properties-common python-software-properties && add-apt-repository --yes ppa:kbs/kbs && \ 
+    add-apt-repository --yes ppa:xqms/opencv-nonfree &&  apt-get update && apt-get install -y \
+	debhelper kbs-software sudo binutils mesa-utils\
+	python-catkin-tools tmux
+
+# Try to test bumblebee (optional)
+#RUN apt-get install -y bumblebee nvidia-current bumblebee-nvidia
+# ===== additional commands ===== 
+
+# install nvidia drivers (only for nvidia cards!)
+ADD NVIDIA-Linux-x86_64-378.13.run /tmp/NVIDIA-Linux-x86_64-378.13.run
+RUN sh /tmp/NVIDIA-Linux-x86_64-378.13.run -a -N --ui=none --no-kernel-module
+RUN rm /tmp/NVIDIA-Linux-x86_64-378.13.run
+
+RUN echo "source /opt/ros/kinetic/setup.bash" > /home/mortacious/.bashrc
+USER mortacious
+ 
