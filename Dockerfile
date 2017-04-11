@@ -42,6 +42,6 @@ RUN apt-get update && apt-get install -y bash-completion git software-properties
 # switch to local user 
 USER $USERNAME
 # ===== prepare ROS system ====
-RUN echo "source /opt/ros/kinetic/setup.bash" > /home/$USERNAME/.bashrc && rosdep update
+RUN echo "source /opt/ros/kinetic/setup.bash\nsource /usr/share/gazebo/setup.sh" > /home/$USERNAME/.bashrc && echo "source ~/.bashrc" > /home/$USERNAME/.bash_profile && rosdep update
 
  
