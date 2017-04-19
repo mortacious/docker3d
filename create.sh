@@ -8,14 +8,14 @@ CONTAINER_ID=$(docker ps -q --filter="name=^.?${CONTAINER_NAME}\$")
 CONTAINER_ID=$(docker ps -aq --filter="name=^.?${CONTAINER_NAME}\$")
 [ -n "$CONTAINER_ID" ] && echo "Destroying container '$CONTAINER_NAME'" && docker rm "$CONTAINER_ID"
 
-PARAMETERS="--privileged -e DISPLAY=$DISPLAY --name=$CONTAINER_NAME -h $CONTAINER_NAME -u $USER -w /home/$USER -i -t"
+PARAMETERS="--privileged -e DISPLAY=$DISPLAY --name=$CONTAINER_NAME -u $USER -w /home/$USER -i -t"
 
 [ -d "/dev/dri" ] && PARAMETERS="$PARAMETERS --device=/dev/dri:/dev/dri:rw"
 [ -d "/tmp/.X11-unix" ] && PARAMETERS="$PARAMETERS --volume=/tmp/.X11-unix:/tmp/.X11-unix:rw"
 [ -d "/var/run" ] && PARAMETERS="$PARAMETERS --volume=/var/run:/var/run:rw"
 [ -d "/dev" ] && PARAMETERS="$PARAMETERS --volume=/dev:/dev:rw"
 [ ! -d "/home/$USER/ros_workspace" ] && mkdir -p "/home/$USER/ros_workspace"
-PARAMETERS="$PARAMETERS --volume=/home/$USER/ros_workspace:/home/$USER/ros_workspace:rw -p 11311:11311"
+PARAMETERS="$PARAMETERS --volume=/home/$USER/ros_workspace:/home/$USER/ros_workspace:rw --network=host"
 
 
 command_exists () {
