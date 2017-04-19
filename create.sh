@@ -15,7 +15,7 @@ PARAMETERS="--privileged -e DISPLAY=$DISPLAY --name=$CONTAINER_NAME -h $CONTAINE
 [ -d "/var/run" ] && PARAMETERS="$PARAMETERS --volume=/var/run:/var/run:rw"
 [ -d "/dev" ] && PARAMETERS="$PARAMETERS --volume=/dev:/dev:rw"
 [ ! -d "/home/$USER/ros_workspace" ] && mkdir -p "/home/$USER/ros_workspace"
-PARAMETERS="$PARAMETERS --volume=/home/$USER/ros_workspace:/home/$USER/ros_workspace:rw"
+PARAMETERS="$PARAMETERS --volume=/home/$USER/ros_workspace:/home/$USER/ros_workspace:rw -p 11311:11311"
 
 
 command_exists () {
